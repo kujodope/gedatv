@@ -1,0 +1,30 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Current LTS; Next.js 16 needs 20.9+, and 22 starts and runs faster
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# The Next.js runtime already serves /_next/static/* (hashed file names) as
+# immutable for a year and caches pages and /api routes on the CDN from the
+# headers the app sends. The rules below cover the plain files in /public.
+
+# Icons keep their names between deploys: a week in the browser is plenty
+# (every deploy clears Netlify's own CDN copy anyway)
+[[headers]]
+  for = "/icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+# The old service worker's kill switch must always be fetched fresh
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# www → apex: Netlify redirects every domain alias (www included) to the
+# primary domain by itself, so no middleware runs on each request for it

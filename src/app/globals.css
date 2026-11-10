@@ -1,0 +1,454 @@
+@import "tailwindcss";
+
+/*
+ * GedaTv design system — black, minimal, glass navigation
+ * -------------------------------------------------
+ * Every colour is a CSS variable that changes with:
+ *   html[data-theme="dark" | "light"]   (dark is the primary experience)
+ *   html[data-accent="pink" | "rose" | "lavender" | "peach"]
+ *
+ * The stock Tailwind utilities that the existing pages use (`text-white`,
+ * `bg-black`, `text-gray-400`, ...) are mapped onto these variables with
+ * `@theme inline`, so the whole site re-themes without rewriting markup:
+ * "white" means the foreground colour and "black" means the page colour.
+ * Use `.dark-scope` on regions that must stay dark in both themes (the video
+ * player, artwork overlays).
+ */
+
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+@theme inline {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  --font-script: var(--font-cute), var(--font-heading), cursive;
+
+  --color-white: var(--fg);
+  --color-black: var(--bg);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+
+  --color-gray-100: var(--g100);
+  --color-gray-200: var(--g200);
+  --color-gray-300: var(--g300);
+  --color-gray-400: var(--g400);
+  --color-gray-500: var(--g500);
+  --color-gray-600: var(--g600);
+  --color-gray-700: var(--g700);
+  --color-gray-800: var(--g800);
+  --color-gray-900: var(--g900);
+  --color-zinc-400: var(--g400);
+  --color-zinc-500: var(--g500);
+  --color-zinc-600: var(--g600);
+  --color-zinc-800: var(--g800);
+  --color-zinc-900: var(--g900);
+  --color-zinc-950: var(--surface);
+  --color-neutral-900: var(--g900);
+  --color-slate-900: var(--g900);
+
+  /* Elevation ramp: page → raised surface → control → hover */
+  --color-ink: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+
+  /* Brand */
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-love: var(--love);
+  --color-love-strong: var(--love-strong);
+  --color-love-soft: var(--love-soft);
+  --color-lavender: var(--lav);
+  --color-lavender-soft: var(--lav-soft);
+  --color-babypink: var(--pink);
+  --color-gold: var(--gold);
+
+  --color-amber-300: var(--gold);
+  --color-amber-400: var(--gold);
+  --color-amber-500: var(--gold);
+  --color-yellow-300: var(--gold);
+  --color-yellow-400: var(--gold);
+  --color-yellow-500: var(--gold);
+
+  /* Legacy names still referenced by some pages */
+  --color-glass: color-mix(in srgb, var(--fg) 4%, transparent);
+  --color-glass-dark: color-mix(in srgb, var(--bg) 72%, transparent);
+  --color-prime-dark: var(--bg);
+  --color-prime-card: var(--surface);
+  --color-prime-hover: var(--surface-3);
+  --color-prime-blue: var(--accent);
+
+  --ease-cinema: cubic-bezier(0.22, 1, 0.36, 1);
+  --radius-card: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme tokens                                                        */
+/* ------------------------------------------------------------------ */
+
+:root,
+.dark-scope {
+  --bg: #000000;
+  --surface: #0c0c0e;
+  --surface-2: #151518;
+  --surface-3: #202024;
+  --fg: #fafafa;
+  --muted: #a1a1aa;
+  --subtle: #71717a;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+
+  --g100: #f4f4f5;
+  --g200: #e4e4e7;
+  --g300: #d4d4d8;
+  --g400: #a1a1aa;
+  --g500: #71717a;
+  --g600: #52525b;
+  --g700: #3f3f46;
+  --g800: #27272a;
+  --g900: #18181b;
+
+  --pink: #c7c9ff;
+  --love: #ffffff;
+  --love-strong: #e5e5e5;
+  --love-soft: rgba(255, 255, 255, 0.12);
+  --lav: #8b8dff;
+  --lav-soft: rgba(139, 141, 255, 0.14);
+  --gold: #facc15;
+
+  --accent: #7b7dff;
+  --accent-strong: #9a9cff;
+  --accent-soft: rgba(123, 125, 255, 0.16);
+  --on-accent: #ffffff;
+
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --shadow-card: 0 18px 40px -14px rgba(0, 0, 0, 0.9);
+  --scrim: 0, 0, 0;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #fff7fa;
+  --surface: #ffffff;
+  --surface-2: #fdf0f5;
+  --surface-3: #f8e3ec;
+  --fg: #2b1427;
+  --muted: #6f5669;
+  --subtle: #977e90;
+  --line: rgba(110, 40, 80, 0.11);
+  --line-strong: rgba(110, 40, 80, 0.22);
+
+  --g100: #2b1427;
+  --g200: #3b2236;
+  --g300: #4f3549;
+  --g400: #6f5669;
+  --g500: #8a7184;
+  --g600: #b39cad;
+  --g700: #dcc9d4;
+  --g800: #efe1e8;
+  --g900: #f8eef3;
+
+  --pink: #ffd3e0;
+  --love: #c8244f;
+  --love-strong: #b01d44;
+  --love-soft: rgba(200, 36, 79, 0.10);
+  --lav: #7a5ad8;
+  --lav-soft: rgba(122, 90, 216, 0.10);
+  --gold: #b7791f;
+
+  --accent: #d23a6f;
+  --accent-strong: #b82d5e;
+  --accent-soft: rgba(210, 58, 111, 0.10);
+  --on-accent: #ffffff;
+
+  --glow-a: rgba(255, 150, 190, 0.22);
+  --glow-b: rgba(190, 170, 255, 0.18);
+  --shadow-card: 0 16px 34px -16px rgba(120, 40, 80, 0.35);
+  --scrim: 255, 247, 250;
+  color-scheme: light;
+}
+
+/* Re-assert dark tokens inside dark islands when the page is light */
+:root[data-theme="light"] .dark-scope {
+  --bg: #000000;
+  --surface: #0c0c0e;
+  --surface-2: #151518;
+  --surface-3: #202024;
+  --fg: #fafafa;
+  --muted: #a1a1aa;
+  --subtle: #71717a;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+
+  --g100: #f4f4f5;
+  --g200: #e4e4e7;
+  --g300: #d4d4d8;
+  --g400: #a1a1aa;
+  --g500: #71717a;
+  --g600: #52525b;
+  --g700: #3f3f46;
+  --g800: #27272a;
+  --g900: #18181b;
+
+  --pink: #c7c9ff;
+  --love: #ffffff;
+  --love-strong: #e5e5e5;
+  --love-soft: rgba(255, 255, 255, 0.12);
+  --lav: #8b8dff;
+  --lav-soft: rgba(139, 141, 255, 0.14);
+  --gold: #facc15;
+
+  --accent: #7b7dff;
+  --accent-strong: #9a9cff;
+  --accent-soft: rgba(123, 125, 255, 0.16);
+  --on-accent: #ffffff;
+
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --shadow-card: 0 18px 40px -14px rgba(0, 0, 0, 0.9);
+  --scrim: 0, 0, 0;
+  color-scheme: dark;
+}
+
+/* Accent choices (dark values first, then light) */
+:root[data-accent="rose"], [data-accent="rose"] .dark-scope { --accent: #ff5c7f; --accent-strong: #ff7a95; --accent-soft: rgba(255, 92, 127, 0.15); --on-accent: #2b0710; }
+:root[data-accent="lavender"], [data-accent="lavender"] .dark-scope { --accent: #bba6ff; --accent-strong: #cdbdff; --accent-soft: rgba(187, 166, 255, 0.15); --on-accent: #1a1033; }
+:root[data-accent="peach"], [data-accent="peach"] .dark-scope { --accent: #ffa18c; --accent-strong: #ffb6a5; --accent-soft: rgba(255, 161, 140, 0.15); --on-accent: #2e0f08; }
+:root[data-theme="light"][data-accent="rose"] { --accent: #c41f45; --accent-strong: #a8183a; --accent-soft: rgba(196, 31, 69, 0.10); --on-accent: #fff; }
+:root[data-theme="light"][data-accent="lavender"] { --accent: #6e4fd0; --accent-strong: #5a3db8; --accent-soft: rgba(110, 79, 208, 0.10); --on-accent: #fff; }
+:root[data-theme="light"][data-accent="peach"] { --accent: #c4512f; --accent-strong: #a94326; --accent-soft: rgba(196, 81, 47, 0.10); --on-accent: #fff; }
+
+:root {
+  --nav-height: 4rem;
+  /* Poster width inside horizontal rows (see density settings) */
+  --poster-w: 112px;
+}
+@media (min-width: 640px) { :root { --poster-w: 124px; } }
+@media (min-width: 1024px) { :root { --poster-w: 150px; } }
+@media (min-width: 1536px) { :root { --poster-w: 170px; } }
+@media (min-width: 768px) { :root { --nav-height: 4.25rem; } }
+
+:root[data-density="compact"] { --poster-w: 112px; }
+@media (min-width: 640px) { :root[data-density="compact"] { --poster-w: 124px; } }
+@media (min-width: 1024px) { :root[data-density="compact"] { --poster-w: 140px; } }
+@media (min-width: 1536px) { :root[data-density="compact"] { --poster-w: 152px; } }
+
+html {
+  background-color: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Static ambient light: one fixed, composited layer, never animated */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 40rem at 8% -10%, var(--glow-a), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 0%, var(--glow-b), transparent 60%);
+}
+
+/* Room for the phone tab bar so it never covers the footer */
+@media (max-width: 767px) {
+  body:has([data-tabbar]) { padding-bottom: calc(3.75rem + env(safe-area-inset-bottom)); }
+}
+
+/* While a title is playing the player owns the screen */
+body.player-active [data-site-nav] {
+  display: none !important;
+}
+body.player-active:has([data-tabbar]) { padding-bottom: 0; }
+
+@layer base {
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Components                                                          */
+/* ------------------------------------------------------------------ */
+
+@layer components {
+  .page-gutter { @apply px-4 sm:px-6 lg:px-10 xl:px-14; }
+  .page-top { padding-top: calc(var(--nav-height) + 2rem); }
+
+  /* Floating glass pill used by the top navigation */
+  .glass-nav {
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 4px 16px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.14);
+  }
+
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-muted; }
+  .script { font-family: var(--font-script); letter-spacing: 0; }
+
+  .surface { @apply bg-surface border border-line rounded-2xl; }
+  .surface-glass {
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    @apply border border-line rounded-2xl;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold whitespace-nowrap select-none
+      h-11 px-5 text-sm disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-lg { @apply h-12 px-6 text-[15px] md:h-[52px] md:px-7; }
+  .btn-sm { @apply h-9 px-4 text-[13px]; }
+  /* The romantic red: Watch Now and other primary actions */
+  .btn-primary { background: #fff; color: #000; }
+  .btn-primary:hover { background: rgba(255, 255, 255, 0.9); }
+  .btn-glass {
+    @apply text-white border border-white/15 backdrop-blur-xl;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .btn-glass:hover { background: rgba(255, 255, 255, 0.16); }
+  .btn-accent { background: var(--accent); color: var(--on-accent); }
+  .btn-accent:hover { background: var(--accent-strong); }
+  .btn-ghost {
+    @apply text-white border border-line-strong;
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+  }
+  .btn-ghost:hover { background: color-mix(in srgb, var(--fg) 14%, transparent); }
+  .btn-soft { @apply text-white border border-line; background: var(--surface-2); }
+  .btn-soft:hover { background: var(--surface-3); }
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-full shrink-0 h-11 w-11 text-white border border-line-strong;
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+  }
+  .btn-icon:hover { background: color-mix(in srgb, var(--fg) 16%, transparent); }
+  .btn-icon[aria-pressed="true"] { background: #fff; border-color: #fff; color: #000; }
+
+  /* Pills / filter chips */
+  .chip {
+    @apply inline-flex items-center gap-2 h-9 px-4 rounded-full text-[13px] font-medium whitespace-nowrap
+      border border-line text-gray-300 hover:text-white hover:border-line-strong;
+    background: color-mix(in srgb, var(--fg) 3%, transparent);
+  }
+  .chip-active, .chip[aria-pressed="true"], .chip[aria-selected="true"] {
+    background: var(--accent); color: var(--on-accent); border-color: var(--accent);
+  }
+  .chip-active:hover, .chip[aria-pressed="true"]:hover, .chip[aria-selected="true"]:hover { color: var(--on-accent); }
+
+  .badge {
+    @apply inline-flex items-center h-5 px-1.5 rounded-[5px] text-[10px] font-bold uppercase tracking-wider border border-line-strong text-gray-200;
+  }
+
+  .field {
+    @apply h-11 w-full rounded-full border border-line px-4 text-sm text-white placeholder:text-subtle
+      outline-none focus:border-accent;
+    background: color-mix(in srgb, var(--fg) 5%, transparent);
+  }
+  textarea.field { @apply h-auto rounded-2xl py-3; }
+  select.field { @apply appearance-none pr-9 cursor-pointer; background-image: none; }
+
+  /* Loading placeholder (static: no moving sheen) */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg;
+    background: color-mix(in srgb, var(--fg) 6%, transparent);
+  }
+
+  /* Image scrims for readable text over artwork (follow the theme) */
+  .scrim-hero {
+    background:
+      linear-gradient(to right, rgba(var(--scrim), 0.94) 0%, rgba(var(--scrim), 0.62) 34%, rgba(var(--scrim), 0) 68%),
+      linear-gradient(to top, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.55) 24%, rgba(var(--scrim), 0) 52%),
+      linear-gradient(to bottom, rgba(var(--scrim), 0.5) 0%, rgba(var(--scrim), 0) 18%);
+  }
+  .scrim-bottom { background: linear-gradient(to top, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.7) 35%, rgba(var(--scrim), 0) 100%); }
+  .scrim-card { background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.55) 40%, rgba(0, 0, 0, 0) 75%); }
+
+  .prose-muted { @apply text-gray-400 leading-relaxed; }
+
+  /* Poster card sizing inside horizontal rows */
+  .row-poster { width: var(--poster-w); flex: none; }
+}
+
+/* Legacy helpers kept for pages that still use them */
+.cinematic-overlay { background: linear-gradient(to top, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.9) 20%, rgba(var(--scrim), 0.4) 50%, rgba(var(--scrim), 0) 100%); }
+.cinematic-side { background: linear-gradient(to right, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.8) 30%, rgba(var(--scrim), 0) 100%); }
+.glass-pill { @apply border border-line rounded-full; background: color-mix(in srgb, var(--bg) 70%, transparent); }
+
+/* ------------------------------------------------------------------ */
+/* Motion                                                              */
+/* ------------------------------------------------------------------ */
+
+/*
+ * GedaTv shows content immediately: no entrance or page animations, no
+ * carousels fading, no hover transitions or blur. The one animation kept is
+ * the loading spinner, so people can see something is still loading.
+ */
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.animate-spin { animation: gedatv-spin 1s linear infinite !important; }
+@keyframes gedatv-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin { animation-duration: 3s !important; }
+}
+
+::selection { background: color-mix(in srgb, var(--accent) 80%, transparent); color: var(--on-accent); }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+/* ------------------------------------------------------------------ */
+/* Scrollbars                                                          */
+/* ------------------------------------------------------------------ */
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 10px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--g600); }
+
+.scrollbar-none::-webkit-scrollbar, .scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-none, .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.dropdown-scrollbar::-webkit-scrollbar { width: 6px; }
+.dropdown-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 9999px; }
+.dropdown-scrollbar::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 9999px; border: 0; }
+.dropdown-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ------------------------------------------------------------------ */
+/* Utilities                                                           */
+/* ------------------------------------------------------------------ */
+
+@layer utilities {
+  .text-shadow { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45); }
+  .text-shadow-lg { text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5); }
+  [data-theme="light"] .text-shadow, [data-theme="light"] .text-shadow-lg { text-shadow: none; }
+  [data-theme="light"] .dark-scope .text-shadow { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45); }
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+  }
+  .text-on-accent { color: var(--on-accent); }
+}
+
+
