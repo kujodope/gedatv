@@ -9,7 +9,6 @@ import {
     X,
     Dices,
     Mic,
-    Heart,
     Home,
     Film,
     ChevronDown,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { surpriseMe } from "@/app/actions";
-import { useLibrary, lib, selectActiveProfile } from "@/lib/library";
+import { useLibrary, lib } from "@/lib/library";
 import { useSearchInput } from "@/lib/useSearchInput";
 
 const primaryLinks = [
@@ -34,7 +33,6 @@ const primaryLinks = [
 ];
 
 const secondaryLinks = [
-    { name: "Our Space", href: "/us" },
     { name: "People", href: "/people" },
     { name: "Studios", href: "/companies" },
     { name: "Awards", href: "/awards" },
@@ -68,7 +66,6 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const search = useSearchInput();
     const searchQuery = search.value;
     const [isPending, startTransition] = useTransition();
@@ -79,11 +76,7 @@ export default function Navbar() {
 
     const desktopInputRef = useRef<HTMLInputElement>(null);
     const moreRef = useRef<HTMLLIElement>(null);
-    const profileRef = useRef<HTMLDivElement>(null);
 
-    // Couple library state
-    const profiles = useLibrary((s) => s.profiles);
-    const activeProfile = useLibrary(selectActiveProfile);
     const currentTheme = useLibrary((s) => s.settings.theme);
 
     // Toggle theme
@@ -118,7 +111,6 @@ export default function Navbar() {
     useEffect(() => {
         setIsMobileMenuOpen(false);
         setIsMoreOpen(false);
-        setIsProfileOpen(false);
     }, [pathname]);
 
     // Close dropdowns on outside click
@@ -126,9 +118,6 @@ export default function Navbar() {
         const handleClickOutside = (e: MouseEvent) => {
             if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
                 setIsMoreOpen(false);
-            }
-            if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-                setIsProfileOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -333,62 +322,6 @@ export default function Navbar() {
                         <Dices className={cn("h-4 w-4", isPending && "animate-spin")} />
                     </button>
 
-                    {/* Profile switcher */}
-                    <div className="relative" ref={profileRef}>
-                        <button
-                            onClick={() => setIsProfileOpen(v => !v)}
-                            aria-expanded={isProfileOpen}
-                            className={cn(
-                                "grid place-items-center h-9 w-9 rounded-[14px] hover:bg-white/10",
-                                isProfileOpen && "bg-white/10"
-                            )}
-                            title={`Active profile: ${activeProfile.name}`}
-                            aria-label={`Profile: ${activeProfile.name}`}
-                        >
-                            <span className="text-[15px] leading-none select-none">{activeProfile.avatar}</span>
-                        </button>
-
-                        {isProfileOpen && (
-                            <div className="glass-nav absolute right-0 top-full mt-3 w-56 rounded-2xl bg-black/85 p-1.5 z-50 space-y-0.5">
-                                <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/50">
-                                    Who is watching?
-                                </div>
-                                {profiles.map((p) => {
-                                    const isCurrent = p.id === activeProfile.id;
-                                    return (
-                                        <button
-                                            key={p.id}
-                                            onClick={() => {
-                                                lib.setActiveProfile(p.id);
-                                                setIsProfileOpen(false);
-                                            }}
-                                            className={cn(
-                                                "w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium",
-                                                isCurrent ? "bg-white/15 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"
-                                            )}
-                                        >
-                                            <span className="flex items-center gap-2">
-                                                <span className="text-base">{p.avatar}</span>
-                                                <span>{p.name}</span>
-                                            </span>
-                                            {isCurrent && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                                        </button>
-                                    );
-                                })}
-                                <div className="border-t border-white/10 mt-1 pt-1">
-                                    <Link
-                                        href="/watchlist"
-                                        onClick={() => setIsProfileOpen(false)}
-                                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium text-white/75 hover:bg-white/10 hover:text-white"
-                                    >
-                                        <Heart className="w-3.5 h-3.5" />
-                                        <span>My List</span>
-                                    </Link>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
                     {/* Theme toggle */}
                     <button
                         onClick={toggleTheme}
@@ -416,31 +349,6 @@ export default function Navbar() {
                     className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl overflow-y-auto px-6 pt-24 pb-6 flex flex-col justify-between"
                 >
                     <div className="space-y-4">
-                        {/* Profile switcher inside mobile drawer */}
-                        <div className="p-3.5 rounded-2xl bg-surface border border-line flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                                <span className="text-2xl">{activeProfile.avatar}</span>
-                                <div>
-                                    <div className="text-xs text-muted">Currently watching as</div>
-                                    <div className="text-sm font-bold text-white">{activeProfile.name}</div>
-                                </div>
-                            </div>
-                            <div className="flex gap-1">
-                                {profiles.map((p) => (
-                                    <button
-                                        key={p.id}
-                                        onClick={() => lib.setActiveProfile(p.id)}
-                                        className={cn(
-                                            "h-8 px-2.5 rounded-full text-xs font-semibold",
-                                            p.id === activeProfile.id ? "bg-white text-black" : "bg-surface-2 text-muted"
-                                        )}
-                                    >
-                                        {p.avatar} {p.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
                         {/* Mobile Navigation links */}
                         <ul className="space-y-1.5 pt-2">
                             {primaryLinks.map((link) => {

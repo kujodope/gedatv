@@ -6,7 +6,6 @@ import { tmdb, type Movie } from "@/lib/tmdb";
 import { catalogMissing } from "@/lib/catalog";
 import CatalogUnavailable from "@/components/CatalogUnavailable";
 import RecentlyPlayedRow from "@/components/RecentlyPlayedRow";
-import CoupleRows from "@/components/CoupleRows";
 import InfiniteGenres from "@/components/InfiniteGenres";
 import Top10Row from "@/components/Top10Row";
 import { MovieRowSkeleton } from "@/components/Skeleton";
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
   title: {
     absolute: "GedaTv",
   },
-  description: "Unlimited movies, anime, and TV shows. A cozy digital sanctuary made with love for watching together.",
+  description: "Unlimited movies, anime, and TV shows. Stream and discover what to watch next on GedaTv.",
   alternates: {
     canonical: "https://gedatv.netlify.app",
   },
@@ -54,7 +53,6 @@ export default async function Home() {
   // Every TMDB request starts here, at the same time
   const trendingTodayRequest = tmdb.getTrendingToday("all");
   const heroRequest = withHeroLogos(trendingTodayRequest);
-  const sanusPicksRequest = tmdb.getSanusPicks();
   const animeHits = tmdb.getAnime(1);
   const trendingWeek = tmdb.getTrendingWeek("all");
   const popularMovies = tmdb.getPopular("movie");
@@ -66,9 +64,8 @@ export default async function Home() {
   // waited for, so the cached page has them in place at the top of the HTML.
   // Everything further down streams in as its own list arrives, without
   // holding up the page.
-  const [heroMovies, sanusPicks, trendingToday] = await Promise.all([
+  const [heroMovies, trendingToday] = await Promise.all([
     heroRequest,
-    sanusPicksRequest,
     trendingTodayRequest,
   ]);
 
@@ -95,19 +92,6 @@ export default async function Home() {
         {/* Real Continue Watching */}
         <RecentlyPlayedRow />
 
-        {/* Real Couple Space: Our Watchlist & Our Favourite Movies */}
-        <CoupleRows />
-
-        {/* Comfort Picks: Heartwarming romantic & comfort movies */}
-        {sanusPicks.length > 0 && (
-          <MovieRow
-            title="Comfort Picks"
-            subtitle="Heartwarming comfort stories and romantic classics to watch together"
-            movies={sanusPicks}
-            icon={<Sparkles className="w-5 h-5 text-accent" />}
-            badge="For Us"
-          />
-        )}
 
         {/* Top 10 Ranked Row */}
         <Top10Row title="Top 10 Today" movies={trendingToday} />

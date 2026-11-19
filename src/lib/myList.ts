@@ -6,7 +6,7 @@ import type { Movie } from "@/lib/tmdb";
 
 /*
  * "My List" reads from the profile-aware library (gedatv_v3) so the list
- * page, the home row, the navbar and the couple space all agree. Writes are
+ * page, the home row and the navbar all agree. Writes are
  * mirrored to the older gedatv_watchlist key, which keeps both stores in
  * step for anything still reading it and for a rollback to a previous build.
  */

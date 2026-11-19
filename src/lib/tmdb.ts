@@ -209,25 +209,6 @@ export function slimDetailsForClient(d: any) {
     };
 }
 
-// Curated list of heartwarming romantic & comfort masterpieces for "Comfort Picks"
-const SANUS_PICKS_IDS: { type: "movie" | "tv"; id: number }[] = [
-    { type: "movie", id: 372058 }, // Your Name
-    { type: "movie", id: 313369 }, // La La Land
-    { type: "movie", id: 129 },    // Spirited Away
-    { type: "movie", id: 122906 }, // About Time
-    { type: "movie", id: 4935 },   // Howl's Moving Castle
-    { type: "movie", id: 378064 }, // A Silent Voice
-    { type: "movie", id: 4348 },   // Pride & Prejudice
-    { type: "movie", id: 194 },    // Amélie
-    { type: "movie", id: 666277 }, // Past Lives
-    { type: "movie", id: 76 },     // Before Sunrise
-    { type: "movie", id: 331482 }, // Little Women
-    { type: "movie", id: 568160 }, // Weathering With You
-    { type: "movie", id: 11036 },  // The Notebook
-];
-
-let cachedSanusPicks: { timestamp: number; data: Movie[] } | null = null;
-
 export const tmdb = {
     getTrending: async (type: "movie" | "tv" | "all" = "all"): Promise<Movie[]> => {
         const data = await fetchTMDB(`/trending/${type}/day`);
@@ -328,26 +309,6 @@ export const tmdb = {
             if (tvItems[i]) combined.push(tvItems[i]);
         }
         return combined;
-    },
-    // Dedicated romantic masterpieces for "Comfort Picks"
-    getSanusPicks: async (): Promise<Movie[]> => {
-        if (cachedSanusPicks && Date.now() - cachedSanusPicks.timestamp < 1000 * 60 * 60) {
-            return cachedSanusPicks.data;
-        }
-
-        const promises = SANUS_PICKS_IDS.map(async (entry) => {
-            const data = await fetchTMDB(`/${entry.type}/${entry.id}`, {}, TTL.details);
-            if (data && !isNotFound(data)) {
-                return toListItem(data, entry.type);
-            }
-            return null;
-        });
-
-        const results = await Promise.all(promises);
-        const filtered = results.filter((item): item is Movie => item !== null);
-        // An outage returns nothing; don't remember that for an hour
-        if (filtered.length > 0) cachedSanusPicks = { timestamp: Date.now(), data: filtered };
-        return filtered;
     },
     getRomance: async (): Promise<Movie[]> => {
         // Genre 10749 = Romance

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Play, Plus, Check, Info, X, User, Building2, Star, Heart, Film } from "lucide-react";
@@ -48,13 +48,6 @@ export default function MovieCard({
     const isCompany = movie.media_type === "company";
     const mediaType = (movie.media_type as "movie" | "tv") || "movie";
     const movieIdStr = String(movie.id);
-
-    const [isWatchedTogether, setIsWatchedTogether] = useState(false);
-
-    // Initial lightweight check for watched-together badge
-    useEffect(() => {
-        setIsWatchedTogether(lib.isTogether(mediaType, movieIdStr));
-    }, [movieIdStr, mediaType]);
 
     // Fast check for watchlist and favourites on hover / interaction
     const ensureActionState = () => {
@@ -240,19 +233,6 @@ export default function MovieCard({
                     <div className="absolute top-2 left-2 z-30 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 border border-white/10 text-[11px] font-bold text-white">
                         <Star className="w-3 h-3 text-gold fill-gold" />
                         <span>{rating}</span>
-                    </div>
-                )}
-
-                {/* Watched Together Badge (top-right) */}
-                {isWatchedTogether && (
-                    <div
-                        className={cn(
-                            "absolute bottom-2 left-2 z-20 grid place-items-center h-6 w-6 rounded-full bg-black/70 text-white",
-                            onRemove && "left-2"
-                        )}
-                        title="Watched together"
-                    >
-                        <Heart className="w-3.5 h-3.5 fill-white" />
                     </div>
                 )}
 

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { TMDB_CONFIG } from "@/lib/tmdb";
 import { tmdbImage, heroSrcSet } from "@/lib/images";
-import { Play, Plus, Share2, Check, Clapperboard, Instagram, Twitter, Facebook, Youtube, Globe, Star, Heart, Sparkles } from "lucide-react";
-import { lib, toTitleRef, useLibrary } from "@/lib/library";
+import { Play, Plus, Share2, Check, Clapperboard, Instagram, Twitter, Facebook, Youtube, Globe, Star, Heart } from "lucide-react";
+import { lib, toTitleRef } from "@/lib/library";
 import { setInMyList, useInList } from "@/lib/myList";
 import { cn } from "@/lib/utils";
 import { useReleaseStatus } from "@/lib/release";
@@ -76,10 +76,6 @@ const DetailsHero = ({ tmdbData, type, onPlay, currentSeason, onSeasonChange, cu
     const trailer = tmdbData.videos?.results?.find((v: VideoResult) => v.type === "Trailer" && v.site === "YouTube") ||
         tmdbData.videos?.results?.find((v: VideoResult) => v.type === "Teaser" && v.site === "YouTube");
 
-    // Couple library: watched together check
-    const isWatchedTogether = useLibrary((s) =>
-        s.couple.together.some((i) => i.id === titleIdStr && i.type === type && i.watchedAt)
-    );
 
     const inWatchlist = useInList("watchlist", type, titleIdStr);
     const isFav = useInList("favourites", type, titleIdStr);
@@ -124,15 +120,6 @@ const DetailsHero = ({ tmdbData, type, onPlay, currentSeason, onSeasonChange, cu
         if (titleRef) lib.toggle("favourites", titleRef);
     };
 
-    const handleTogetherToggle = () => {
-        const titleRef = toTitleRef(tmdbData, type);
-        if (titleRef) {
-            if (!lib.inTogether(type, titleIdStr)) {
-                lib.toggleTogether(titleRef);
-            }
-            lib.setWatchedTogether(type, titleIdStr, !isWatchedTogether);
-        }
-    };
 
     const externalLinks = [
         tmdbData.homepage && { href: tmdbData.homepage, label: "Official website", icon: <Globe className="h-4 w-4" /> },
@@ -277,23 +264,6 @@ const DetailsHero = ({ tmdbData, type, onPlay, currentSeason, onSeasonChange, cu
                                 aria-label={inWatchlist ? "Remove from My List" : "Add to My List"}
                             >
                                 {inWatchlist ? <Check className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-                            </button>
-
-                            {/* Watched Together Toggle Button */}
-                            <button
-                                onClick={handleTogetherToggle}
-                                className={cn(
-                                    "btn btn-lg border",
-                                    isWatchedTogether
-                                        ? "bg-love/20 border-love text-love shadow-[0_0_14px_rgba(244,63,94,0.3)]"
-                                        : "btn-ghost text-muted hover:text-white"
-                                )}
-                                title="Mark as watched together"
-                            >
-                                <Heart className={cn("h-4 w-4", isWatchedTogether && "fill-love")} />
-                                <span className="text-xs sm:text-sm font-semibold">
-                                    {isWatchedTogether ? "Watched Together 💕" : "Watched Together?"}
-                                </span>
                             </button>
 
                             {/* Share Button */}

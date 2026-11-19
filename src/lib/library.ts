@@ -4,14 +4,13 @@
  * GedaTv personal library
  * -------------------------
  * One versioned localStorage document holds everything personal:
- *   - profiles (two by default: you + your partner), each with its own
- *     watchlist, favourites, watched marks, history and playback progress
- *   - shared couple space: together list, "our favourites", movie-date plans
+ *   - a profile with its watchlist, favourites, watched marks, history and
+ *     playback progress
  *   - custom collections
  *   - settings (theme, accent, density, motion, player preferences)
  *
  * IMPORTANT: this lives in the browser only. It does not sync between devices
- * by itself; the share links and JSON backup in /us and /settings are the
+ * by itself; the JSON backup in /settings is the
  * honest way to move data between phones/laptops without a backend.
  */
 
@@ -34,10 +33,6 @@ export interface TitleRef {
 export interface SavedItem extends TitleRef {
     addedAt: number;
     addedBy?: string; // profile id
-}
-
-export interface TogetherItem extends SavedItem {
-    watchedAt?: number;
 }
 
 export interface HistoryItem extends TitleRef {
@@ -82,25 +77,6 @@ export interface Collection {
     createdBy?: string;
 }
 
-export interface DatePlan {
-    id: string;
-    item: TitleRef;
-    when: string; // ISO local datetime "2026-10-20T20:00"
-    note: string;
-    createdAt: number;
-    createdBy?: string;
-}
-
-export interface CoupleSpace {
-    together: TogetherItem[];
-    ourFavourites: SavedItem[];
-    favouritesTitle: string;
-    favouritesDescription: string;
-    favouritesCover: string; // TMDB backdrop path ("/abc.jpg") or https URL, "" = auto
-    plans: DatePlan[];
-    since: string; // optional "together since" date (YYYY-MM-DD)
-}
-
 export type ThemePref = "dark" | "light" | "system";
 export type AccentPref = "pink" | "rose" | "lavender" | "peach";
 
@@ -121,7 +97,6 @@ export interface LibraryState {
     activeProfile: string;
     data: Record<string, ProfileData>;
     collections: Collection[];
-    couple: CoupleSpace;
     settings: Settings;
 }
 
@@ -164,20 +139,10 @@ const defaultState = (): LibraryState => ({
     version: 3,
     profiles: [
         { id: "p1", name: "You", avatar: "🐻", color: "#c9b8ff" },
-        { id: "p2", name: "Sanu", avatar: "🐱", color: "#ff8db3" },
     ],
     activeProfile: "p1",
-    data: { p1: emptyProfileData(), p2: emptyProfileData() },
+    data: { p1: emptyProfileData() },
     collections: [],
-    couple: {
-        together: [],
-        ourFavourites: [],
-        favouritesTitle: "Our favourite movies",
-        favouritesDescription: "The films and shows we keep coming back to.",
-        favouritesCover: "",
-        plans: [],
-        since: "",
-    },
     settings: { ...DEFAULT_SETTINGS },
 });
 
@@ -292,16 +257,6 @@ function sanitizeState(raw: any): LibraryState {
                 createdBy: typeof c.createdBy === "string" ? c.createdBy : undefined,
             }
             : null, 100);
-    const c = raw.couple || {};
-    state.couple = {
-        together: dedupe(list<TogetherItem>(c.together, sanitizeSaved)),
-        ourFavourites: dedupe(list(c.ourFavourites, sanitizeSaved)),
-        favouritesTitle: str(c.favouritesTitle, 60) || base.couple.favouritesTitle,
-        favouritesDescription: typeof c.favouritesDescription === "string" ? c.favouritesDescription.slice(0, 300) : base.couple.favouritesDescription,
-        favouritesCover: sanitizeCover(c.favouritesCover),
-        plans: list<DatePlan>(c.plans, sanitizePlan, 50),
-        since: /^\d{4}-\d{2}-\d{2}$/.test(c.since) ? c.since : "",
-    };
     const s = raw.settings || {};
     state.settings = {
         theme: ["dark", "light", "system"].includes(s.theme) ? s.theme : base.settings.theme,
@@ -314,32 +269,6 @@ function sanitizeState(raw: any): LibraryState {
         browseSort: typeof s.browseSort === "string" && /^[a-z_.]+$/.test(s.browseSort) ? s.browseSort : base.settings.browseSort,
     };
     return state;
-}
-
-export function sanitizeCover(v: unknown): string {
-    if (typeof v !== "string") return "";
-    if (/^\/[\w.-]+$/.test(v)) return v;
-    try {
-        const u = new URL(v);
-        return u.protocol === "https:" ? u.toString().slice(0, 500) : "";
-    } catch {
-        return "";
-    }
-}
-
-export function sanitizePlan(p: any): DatePlan | null {
-    const item = sanitizeTitle(p?.item);
-    if (!item) return null;
-    const when = typeof p.when === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(p.when) ? p.when : "";
-    if (!when) return null;
-    return {
-        id: typeof p.id === "string" ? p.id.slice(0, 24) : uid(),
-        item,
-        when,
-        note: str(p.note, 280),
-        createdAt: num(p.createdAt) ?? Date.now(),
-        createdBy: typeof p.createdBy === "string" ? p.createdBy.slice(0, 24) : undefined,
-    };
 }
 
 // ---------------------------------------------------------------------------
@@ -438,7 +367,6 @@ function update(mutator: (draft: LibraryState) => void) {
     const draft = structuredClone(getState());
     mutator(draft);
     state = draft;
-    cachedTogetherSet = null;
     persist(draft);
     emit();
 }
@@ -453,7 +381,6 @@ if (typeof window !== "undefined") {
     window.addEventListener("storage", (e) => {
         if (e.key === STORAGE_KEY) {
             state = null;
-            cachedTogetherSet = null;
             emit();
         }
     });
@@ -491,23 +418,10 @@ export function toTitleRef(m: any, type?: MediaType): TitleRef | null {
     });
 }
 
-let cachedTogetherSet: Set<string> | null = null;
-function getTogetherSet(): Set<string> {
-    if (!cachedTogetherSet) {
-        const s = getState();
-        cachedTogetherSet = new Set(s.couple.together.filter((i) => i.watchedAt).map((i) => `${i.type}:${i.id}`));
-    }
-    return cachedTogetherSet;
-}
 
 type PersonalList = "watchlist" | "favourites";
 
 export const lib = {
-    // Fast O(1) couple together check
-    isTogether(type: string, id: string | number): boolean {
-        if (typeof window === "undefined") return false;
-        return getTogetherSet().has(`${type}:${id}`);
-    },
     // Personal lists (per profile)
     has(list: PersonalList, type: string, id: string | number) {
         return activeData(getState())[list].some((i) => i.type === type && i.id === String(id));
@@ -630,82 +544,6 @@ export const lib = {
             if (patch.avatar !== undefined) p.avatar = patch.avatar.slice(0, 8) || p.avatar;
             if (patch.color !== undefined && /^#[0-9a-f]{6}$/i.test(patch.color)) p.color = patch.color;
         });
-    },
-
-    // Couple space
-    inTogether(type: string, id: string | number) {
-        return getState().couple.together.some((i) => i.type === type && i.id === String(id));
-    },
-    toggleTogether(title: TitleRef): boolean {
-        let added = false;
-        update((d) => {
-            const idx = d.couple.together.findIndex((i) => i.type === title.type && i.id === title.id);
-            if (idx >= 0) d.couple.together.splice(idx, 1);
-            else {
-                d.couple.together.unshift({ ...title, addedAt: Date.now(), addedBy: d.activeProfile });
-                added = true;
-            }
-        });
-        return added;
-    },
-    setWatchedTogether(type: string, id: string, watched: boolean) {
-        update((d) => {
-            const item = d.couple.together.find((i) => i.type === type && i.id === id);
-            if (item) item.watchedAt = watched ? Date.now() : undefined;
-        });
-    },
-    inOurFavourites(type: string, id: string | number) {
-        return getState().couple.ourFavourites.some((i) => i.type === type && i.id === String(id));
-    },
-    toggleOurFavourite(title: TitleRef): boolean {
-        let added = false;
-        update((d) => {
-            const idx = d.couple.ourFavourites.findIndex((i) => i.type === title.type && i.id === title.id);
-            if (idx >= 0) d.couple.ourFavourites.splice(idx, 1);
-            else {
-                d.couple.ourFavourites.unshift({ ...title, addedAt: Date.now(), addedBy: d.activeProfile });
-                added = true;
-            }
-        });
-        return added;
-    },
-    updateFavouritesFeature(patch: { title?: string; description?: string; cover?: string }) {
-        update((d) => {
-            if (patch.title !== undefined) d.couple.favouritesTitle = patch.title.slice(0, 60) || "Our favourite movies";
-            if (patch.description !== undefined) d.couple.favouritesDescription = patch.description.slice(0, 300);
-            if (patch.cover !== undefined) d.couple.favouritesCover = sanitizeCover(patch.cover);
-        });
-    },
-    setSince(date: string) {
-        update((d) => { d.couple.since = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : ""; });
-    },
-    addPlan(item: TitleRef, when: string, note: string): DatePlan | null {
-        const plan = sanitizePlan({ id: uid(), item, when, note, createdAt: Date.now(), createdBy: getState().activeProfile });
-        if (!plan) return null;
-        update((d) => {
-            d.couple.plans = [plan, ...d.couple.plans.filter((p) => p.id !== plan.id)].slice(0, 50);
-        });
-        return plan;
-    },
-    importPlan(plan: DatePlan) {
-        const clean = sanitizePlan(plan);
-        if (!clean) return;
-        update((d) => { d.couple.plans = [clean, ...d.couple.plans.filter((p) => p.id !== clean.id)].slice(0, 50); });
-    },
-    removePlan(id: string) {
-        update((d) => { d.couple.plans = d.couple.plans.filter((p) => p.id !== id); });
-    },
-    mergeTogether(items: TitleRef[]): number {
-        let added = 0;
-        update((d) => {
-            for (const raw of items) {
-                const t = sanitizeTitle(raw);
-                if (!t || d.couple.together.some((i) => i.type === t.type && i.id === t.id)) continue;
-                d.couple.together.push({ ...t, addedAt: Date.now() });
-                added++;
-            }
-        });
-        return added;
     },
 
     // Collections
